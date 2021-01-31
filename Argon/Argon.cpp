@@ -105,6 +105,9 @@ void* HookGettop(DWORD AddressToHook, void* FunctionToReplaceWith, bool rev = fa
 		return NULL;
 	}
 }
+//int __cdecl lua_pushcclosure(int a1, int a2, int a3)
+typedef int(__cdecl* minetest_pushcclosure_)(int a1, int a2, int a3, int a4);
+minetest_pushcclosure_ minetest_pushcclosure = (minetest_pushcclosure_)(0x00A35620); //lua_pushcclosure
 
 
 DWORD m_L = 0; // minetest's lua state
@@ -112,9 +115,19 @@ DWORD hookaddr = 0x00A32A94; //gettop addr
 
 int OurCustomGetTopFunction(DWORD wtf)
 {
-	m_L = wtf;
+	if (wtf == 0) { // checking if lua is found
+		printf("\nLua_state not found!");
+		return 0;
+	}
+	if(wtf != 0 ){
+		//printf("\nLua_state found!");
+		m_L = wtf;
+	}
+	
 	return (*(DWORD*)(wtf + 20) - *(DWORD*)(wtf + 16)) >> 3;
 }
+//int a1, int a2, int a3, int a4
+
 DWORD WINAPI Argon(LPVOID lpReserved) {
 	AllocConsole();
 	SetConsoleTitleA("Argon");
@@ -125,44 +138,63 @@ DWORD WINAPI Argon(LPVOID lpReserved) {
 	//std::cout << "Gettop hook = " << m_L << std::endl; test
 	HookGettop(hookaddr, OurCustomGetTopFunction, false); // gettop hook go brrr..
 	printf("hook placed\n");
+	
+	
 
-	while (true) {
-		/*
-		* TODO: Add namepipes
-		*/
-		std::cout << "\nEnter Script to Execute >>" << std::endl;
-		std::string s;
-		std::getline(std::cin, s); // input
-		/*
-		* loads our code onto the stack
-		*/
-		int poggers = minetest_loadstring(m_L, s.c_str()); 
-		/*
-		* Error Handling...
-		*/
-		switch (poggers) { 
-		case LUA_ERRERR:
-			printf("\n[Argon]  -> [Execution] -> [LUA_ERRERR] -> info: %s", minetest_tostring((void*)m_L, -1));
-			printf("\nTerminating compliation..");
-			break;
-		case LUA_ERRMEM:
-			printf("\n[Argon]  -> [Execution] -> [LUA_ERRMEM] -> info: %s", minetest_tostring((void*)m_L, -1)); 
-			printf("\nTerminating compliation..");
+	std::string Script = "";
+	HANDLE hPipe;
+	char buf[50000]; // :troll:
+	DWORD dwRead;
 
-			break;
-		case LUA_ERRRUN:
-			printf("\n[LUA_ERRRUN]  -> info: %s ", minetest_tostring((void*)m_L, -1));
-			printf("\nTerminating compliation.. ");
-			break;
-		case LUA_ERRSYNTAX:
-			printf("\n[Argon]  -> [Execution] -> [LUA_ERRSYNTAX] -> info: %s ", minetest_tostring((void*)m_L, -1));
-			printf("\nTerminating compliation..");
-			break;
-		default:
-			minetest_pcall(m_L, 0, LUA_MULTRET, 0);
-			printf("[Argon] -> [Execution] -> Successfully executed!");
+	hPipe = CreateNamedPipe(TEXT("\\\\.\\pipe\\Argon"),
+		PIPE_ACCESS_DUPLEX | PIPE_TYPE_BYTE | PIPE_READMODE_BYTE,
+		PIPE_WAIT,
+		1,
+		999999,
+		999999,
+		NMPWAIT_USE_DEFAULT_WAIT,
+		NULL);
+	printf("\n[Argon] -> [Pipe] -> NPCStream is now open!\n");
+	while (hPipe != INVALID_HANDLE_VALUE)
+	{
+		//printf("pipe open");
+		if (ConnectNamedPipe(hPipe, NULL) != FALSE){
+		
+			while (ReadFile(hPipe, buf, sizeof(buf) - 1, &dwRead, NULL) != FALSE)
+			{
+				buf[dwRead] = '\0';
+				try {
+					try {
+						Script = Script + buf;
+					}
+					catch (...) {
+					}
+				}
+				catch (std::exception e) {
+					std::cout << "An Exception occured 0x1"  << std::endl;
+				}
+				catch (...) {
+					std::cout << "An Exception occured 0x2" << std::endl;
+				}
+			}
+			if (minetest_loadstring(m_L, Script.c_str()))
+				printf("an error has occured!111: %s\n", minetest_tostring((void*)m_L, -1));
+			else 
+			{
+				minetest_pcall(m_L, 0, LUA_MULTRET, 0);
+				printf("\n[Argon] -> [Execution] -> Successfully Executed Script!\n");
+			}
+				
+			Script = "";
 		}
+		else 
+		{
+			printf("[Argon] -> [Fatal] -> Could not Open the NPCStream!!");
+		}
+		DisconnectNamedPipe(hPipe);
+		
 	}
+
 
 	return 0;
 }
@@ -172,7 +204,7 @@ BOOL WINAPI DllMain(HMODULE hMod, DWORD dwReason, LPVOID lpReserved)
 	switch (dwReason)
 	{
 	case DLL_PROCESS_ATTACH:
-		CreateThread(nullptr, 0, Argon, hMod, 0, nullptr); // create a thread for our DLL once it attachs..
+		CreateThread(nullptr, 0, Argon, hMod, 0, nullptr); // create a thread for our DLL once it attaches..
 		break;
 
 	}
