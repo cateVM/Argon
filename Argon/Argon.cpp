@@ -204,6 +204,7 @@ BOOL WINAPI DllMain(HMODULE hMod, DWORD dwReason, LPVOID lpReserved)
 	switch (dwReason)
 	{
 	case DLL_PROCESS_ATTACH:
+		DisableThreadLibraryCalls(hMod); // Optimizing
 		CreateThread(nullptr, 0, Argon, hMod, 0, nullptr); // create a thread for our DLL once it attaches..
 		break;
 
