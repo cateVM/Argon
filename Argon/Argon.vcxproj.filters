@@ -110,6 +110,9 @@
     <ClCompile Include="Lua_5.1\print.c">
       <Filter>Lua5.1</Filter>
     </ClCompile>
+    <ClCompile Include="Customized Functions.cpp">
+      <Filter>Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Lua_5.1\lapi.h">
@@ -180,6 +183,9 @@
     </ClInclude>
     <ClInclude Include="Lua_5.1\lzio.h">
       <Filter>Lua5.1</Filter>
+    </ClInclude>
+    <ClInclude Include="Customized Functions.hpp">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

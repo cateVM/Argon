@@ -13,6 +13,9 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
+    <Filter Include="Headers">
+      <UniqueIdentifier>{e39c6333-4e83-4180-8233-beaf79604328}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="imgui_d\imconfig.h">
@@ -45,14 +48,17 @@
     <ClInclude Include="GLFW\include\GLFW\glfw3native.h">
       <Filter>ImGui</Filter>
     </ClInclude>
-    <ClInclude Include="TextEditor.h">
-      <Filter>Core</Filter>
-    </ClInclude>
     <ClInclude Include="imgui_d\backends\imgui_impl_dx11.h">
       <Filter>ImGui</Filter>
     </ClInclude>
     <ClInclude Include="imgui_d\backends\imgui_impl_win32.h">
       <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="Injector.hpp">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="TextEditor.h">
+      <Filter>Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -85,6 +91,9 @@
     </ClCompile>
     <ClCompile Include="imgui_d\backends\imgui_impl_win32.cpp">
       <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="Injector.cpp">
+      <Filter>Core</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

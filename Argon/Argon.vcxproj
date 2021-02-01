@@ -37,7 +37,7 @@
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
@@ -50,7 +50,7 @@
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -140,6 +140,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Argon.cpp" />
+    <ClCompile Include="Customized Functions.cpp" />
     <ClCompile Include="Lua_5.1\lapi.c" />
     <ClCompile Include="Lua_5.1\lauxlib.c" />
     <ClCompile Include="Lua_5.1\lbaselib.c" />
@@ -173,6 +174,7 @@
     <ClCompile Include="Lua_5.1\print.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Customized Functions.hpp" />
     <ClInclude Include="Lua_5.1\lapi.h" />
     <ClInclude Include="Lua_5.1\lauxlib.h" />
     <ClInclude Include="Lua_5.1\lcode.h" />

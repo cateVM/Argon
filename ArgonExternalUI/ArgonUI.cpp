@@ -3,7 +3,7 @@
 #include "imgui_d\Backends\imgui_impl_glfw.h"
 #include "imgui_d\Backends\imgui_impl_opengl2.h"
 #include "TextEditor.h"
-
+#include "Injector.hpp"
 
 #include <stdio.h>
 #ifdef __APPLE__
@@ -22,6 +22,21 @@ static void glfw_error_callback(int error, const char* description)
     fprintf(stderr, "Glfw Error %d: %s\n", error, description);
 }
 LPCTSTR lpszPipename = _T("\\\\.\\pipe\\Argon");
+bool Attached = false;
+
+HWND FoundProgram() {
+    HWND HwNDFound = nullptr;
+    HWND MintestMenuWindow = FindWindowA(NULL, "Minetest 5.3.0 [Main Menu]");
+    HWND MinetestGameWindow = FindWindowA(NULL, "Minetest 5.3.0 [OpenGL 4.6.0]");
+    if (MintestMenuWindow) {
+        HwNDFound = MintestMenuWindow;
+    }
+    if (MinetestGameWindow) {
+        HwNDFound = MinetestGameWindow;
+    }
+    return HwNDFound;
+}
+
 int main(int, char**)
 {
     // Setup window
@@ -116,16 +131,11 @@ int main(int, char**)
         ImGui_ImplOpenGL2_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
-
-       
-       
-
         
         {
- 
+             
             ImGui::Begin("Argon");
-
-
+            if (!FoundProgram) { Attached = false; }
             if (ImGui::BeginPopupModal("NPCStream not found!")) {
                 ImGui::Text("NPCStream not detected (did you inject the DLL?)");
                 if (ImGui::Button("Close")) ImGui::CloseCurrentPopup();
@@ -147,6 +157,7 @@ int main(int, char**)
                     NULL);
                 if (hPipe != INVALID_HANDLE_VALUE)
                 {
+                    printf("Executed\n");
                     WriteFile(hPipe,
                         debug_s.GetText().c_str(),
                         debug_s.GetText().size(),
@@ -161,13 +172,38 @@ int main(int, char**)
                     * or 
                     * DOESNT FUCKING EXIST DID YOU INJECT THE DLL?
                     */
-           
-                        ImGui::OpenPopup("NPCStream not found!");
-                    
-
+                    printf("Something went wrong...\n");
+                    ImGui::OpenPopup("NPCStream not found, or not injected!");
                 }
             }
-          
+            ImGui::SameLine();
+            /*
+              Attach button
+              Attaching
+            */
+            if (ImGui::Button("Attach")) {
+                if(Attached) { 
+                    ImGui::OpenPopup("Already injected");
+                }
+                else {
+                    if (!FoundProgram()) {
+                        printf("Bruh, mintest was not found, please open the application\n");
+                    }
+                   else {
+                        TCHAR buffer[MAX_PATH] = { 0 };
+                        std::string Path = Injector::GetArgonDllPath();
+                        printf(Path.c_str());
+                        std::string Responce = Injector::Inject(FoundProgram(), Path);
+                        if (Responce == "Injected") {
+                            printf("Sucessfully Injected\n");
+                            Attached = true;
+                        }
+                        else {
+                            std::cout << Responce << std::endl;
+                        }
+                    }
+                }
+            }
             ImGui::End();
         }
 

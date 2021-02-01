@@ -126,6 +126,8 @@ int OurCustomGetTopFunction(DWORD wtf)
 	
 	return (*(DWORD*)(wtf + 20) - *(DWORD*)(wtf + 16)) >> 3;
 }
+
+
 //int a1, int a2, int a3, int a4
 
 DWORD WINAPI Argon(LPVOID lpReserved) {
@@ -138,8 +140,6 @@ DWORD WINAPI Argon(LPVOID lpReserved) {
 	//std::cout << "Gettop hook = " << m_L << std::endl; test
 	HookGettop(hookaddr, OurCustomGetTopFunction, false); // gettop hook go brrr..
 	printf("hook placed\n");
-	
-	
 
 	std::string Script = "";
 	HANDLE hPipe;
