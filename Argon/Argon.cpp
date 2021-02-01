@@ -2,6 +2,7 @@
 * Author: cate
 * Minetest executor core
 * Compile as an DLL (dynamic lib)
+* x86 release
 * :sunglasses:
 */
 
@@ -14,10 +15,11 @@
 
 
 
-
+// 00A2E050 int __cdecl lua_newstate(int (__cdecl *a1)(int, _DWORD, _DWORD, signed int), int a2)
  // 00A3AD90 luaL_loadstring :troll:
  // 00A32A94 lua_gettop :sunglasses:
-// 00A335D0 lua_tostring for error handleing
+// 00A335D0 lua_tostring for error handling
+// 00A35EC0 lua_createthread
 /*
 int __cdecl luaL_loadstring(int a1, char* a2)
 {
@@ -77,6 +79,14 @@ did_know_every_minute_60_seconds_passes_in_africa minetest_tolstring = (did_know
 typedef int(__cdecl* misrepresenting_is_a_cutie)(int a1, int a2, int a3, int a4);
 misrepresenting_is_a_cutie minetest_pcall = (misrepresenting_is_a_cutie)(0x00A39720); //pcall
 
+/*
+int __cdecl lua_load(int a1, int a2, int a3, int a4)
+*/
+typedef int(__cdecl* minetest_load_)(int a1, int a2, int a3, const char* a4, int a5); //
+minetest_load_ minetest_load = (minetest_load_)(0x00A3A450); //lua_loadx
+
+
+
 #define minetest_tostring(f,x) minetest_tolstring(f,x,NULL)
 /*
 * lua_gettop hook 
@@ -105,14 +115,27 @@ void* HookGettop(DWORD AddressToHook, void* FunctionToReplaceWith, bool rev = fa
 		return NULL;
 	}
 }
+typedef struct LoadS {
+	const char* s;
+	size_t size;
+} LoadS;
+
+static const char* getS(lua_State* L, void* ud, size_t* size) {
+	LoadS* ls = (LoadS*)ud;
+	(void)L;
+	if (ls->size == 0) return NULL;
+	*size = ls->size;
+	ls->size = 0;
+	return ls->s;
+}
 //int __cdecl lua_pushcclosure(int a1, int a2, int a3)
 typedef int(__cdecl* minetest_pushcclosure_)(int a1, int a2, int a3, int a4);
 minetest_pushcclosure_ minetest_pushcclosure = (minetest_pushcclosure_)(0x00A35620); //lua_pushcclosure
 
-
+DWORD m_Lopenlibhook = 0;
 DWORD m_L = 0; // minetest's lua state
 DWORD hookaddr = 0x00A32A94; //gettop addr
-
+DWORD openlibaddr = 0x00A3A450;
 int OurCustomGetTopFunction(DWORD wtf)
 {
 	if (wtf == 0) { // checking if lua is found
@@ -127,7 +150,6 @@ int OurCustomGetTopFunction(DWORD wtf)
 	return (*(DWORD*)(wtf + 20) - *(DWORD*)(wtf + 16)) >> 3;
 }
 
-
 //int a1, int a2, int a3, int a4
 
 DWORD WINAPI Argon(LPVOID lpReserved) {
@@ -140,7 +162,7 @@ DWORD WINAPI Argon(LPVOID lpReserved) {
 	//std::cout << "Gettop hook = " << m_L << std::endl; test
 	HookGettop(hookaddr, OurCustomGetTopFunction, false); // gettop hook go brrr..
 	printf("hook placed\n");
-
+	//HookGettop(openlibaddr, CustomOpenLibFunc, false);
 	std::string Script = "";
 	HANDLE hPipe;
 	char buf[50000]; // :troll:
@@ -177,7 +199,11 @@ DWORD WINAPI Argon(LPVOID lpReserved) {
 					std::cout << "An Exception occured 0x2" << std::endl;
 				}
 			}
-			if (minetest_loadstring(m_L, Script.c_str()))
+			LoadS ls;
+			ls.s = Script.c_str();
+			ls.size = strlen(Script.c_str());
+			//printf("Lua State = %d", m_Lopenlibhook);
+			if (minetest_load(m_L,(int)getS,(int)&ls,"@Argon",0))
 				printf("an error has occured!111: %s\n", minetest_tostring((void*)m_L, -1));
 			else 
 			{

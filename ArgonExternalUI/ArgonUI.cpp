@@ -1,10 +1,14 @@
+/*
+* Compile as .Exe (Executable)
+* x86 release
+*/
 #include "imgui_d\imgui.h"
 #include "imgui_d\imgui_internal.h"
 #include "imgui_d\Backends\imgui_impl_glfw.h"
 #include "imgui_d\Backends\imgui_impl_opengl2.h"
 #include "TextEditor.h"
 #include "Injector.hpp"
-
+#include <iostream> // astroz <3
 #include <stdio.h>
 #ifdef __APPLE__
 #define GL_SILENCE_DEPRECATION
@@ -12,7 +16,7 @@
 #include <GLFW/glfw3.h>
 #include <tchar.h>
 #include <Windows.h> // for namepipes
-
+ImFont* EditorFont;
 #if defined(_MSC_VER) && (_MSC_VER >= 1900) && !defined(IMGUI_DISABLE_WIN32_FUNCTIONS)
 #pragma comment(lib, "legacy_stdio_definitions")
 #endif
@@ -36,7 +40,8 @@ HWND FoundProgram() {
     }
     return HwNDFound;
 }
-
+float ImGuiWidth = 430.f;
+float ImGuiHight = 220.f;
 int main(int, char**)
 {
     // Setup window
@@ -111,7 +116,11 @@ int main(int, char**)
     // Setup Platform/Renderer backends
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL2_Init();
+    ImFontConfig config;
+    config.OversampleH = 3;
+    config.OversampleV = 3;
 
+    EditorFont = io.Fonts->AddFontFromFileTTF("firacode.ttf", 13, &config);
     bool show_demo_window = true;
     bool show_another_window = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
@@ -133,17 +142,36 @@ int main(int, char**)
         ImGui::NewFrame();
         
         {
-             
-            ImGui::Begin("Argon");
+            
+            ImGui::Begin("Argon",NULL,ImGuiWindowFlags_NoScrollbar);
+            ImGui::PushFont(EditorFont);
+ 
+            ImVec2 Size = ImGui::GetWindowSize();
+            if (Size.x < ImGuiWidth) {
+                ImGui::SetWindowSize(ImVec2(ImGuiWidth, Size.y));
+            }
+            if (Size.y < ImGuiHight) {
+                ImGui::SetWindowSize(ImVec2(Size.x, ImGuiHight));
+            }
             if (!FoundProgram) { Attached = false; }
-            if (ImGui::BeginPopupModal("NPCStream not found!")) {
+            if (ImGui::BeginPopupModal("NPCStream not found, or not injected!")) {
                 ImGui::Text("NPCStream not detected (did you inject the DLL?)");
                 if (ImGui::Button("Close")) ImGui::CloseCurrentPopup();
                 ImGui::EndPopup();
             }
-
-            debug_s.Render("Executor");
+            if (ImGui::BeginPopupModal("Already Injected")) {
+                ImGui::Text("You're already injected!");
+                if (ImGui::Button("Close")) ImGui::CloseCurrentPopup();
+                ImGui::EndPopup();
+            }
+            if (ImGui::BeginPopupModal("Mintest not found!")) {
+                ImGui::Text("Minetest was not found! Please open minetest");
+                if (ImGui::Button("Close")) ImGui::CloseCurrentPopup();
+                ImGui::EndPopup();
+            }
+            debug_s.Render("Executor",ImVec2(Size.x - 16, Size.y - 54));
             if (ImGui::Button("Execute")) {
+
                 HANDLE hPipe;
                 DWORD dwWritten;
 
@@ -172,7 +200,7 @@ int main(int, char**)
                     * or 
                     * DOESNT FUCKING EXIST DID YOU INJECT THE DLL?
                     */
-                    printf("Something went wrong...\n");
+                    //printf("Something went wrong...\n");
                     ImGui::OpenPopup("NPCStream not found, or not injected!");
                 }
             }
@@ -187,7 +215,7 @@ int main(int, char**)
                 }
                 else {
                     if (!FoundProgram()) {
-                        printf("Bruh, mintest was not found, please open the application\n");
+                        ImGui::OpenPopup("Mintest not found!");
                     }
                    else {
                         TCHAR buffer[MAX_PATH] = { 0 };
@@ -196,14 +224,17 @@ int main(int, char**)
                         std::string Responce = Injector::Inject(FoundProgram(), Path);
                         if (Responce == "Injected") {
                             printf("Sucessfully Injected\n");
+                            MessageBox(NULL, _T("Sucessfully Injected!\n"), _T("Info"), MB_OK | MB_ICONINFORMATION);
                             Attached = true;
                         }
                         else {
                             std::cout << Responce << std::endl;
+                            
                         }
                     }
                 }
             }
+            ImGui::PopFont();
             ImGui::End();
         }
 
