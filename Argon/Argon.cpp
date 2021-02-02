@@ -55,15 +55,15 @@ extern "C" {
 * pushes [a2] as a function onto to the stack
 */
 typedef int(__cdecl* minetest_loadstring_)(int a1, const char* a2);
-minetest_loadstring_ minetest_loadstring = (minetest_loadstring_)(0x00A3AD90);
+minetest_loadstring_ minetest_loadstring = (minetest_loadstring_)(0x00957470);
 /*
 * lua_gettop
 * we dont actually use this anywhere
 * used as an (kinda) debugging tool
 * feel free to remove this :)
 */
-typedef int(__cdecl* lua_getTop)(int a1);
-lua_getTop minetest_gettop = (lua_getTop)(0x00A32A94);
+typedef int(__fastcall* lua_getTop)(int a1, int a2, int a3, int a4);
+lua_getTop minetest_gettop = (lua_getTop)(0x0094ED10);
 
 /*
 * lua_tolstring
@@ -71,11 +71,11 @@ lua_getTop minetest_gettop = (lua_getTop)(0x00A32A94);
 * we use this for retrieving lua error messages that 
 * get pushed too the stack when an error occurs
 */
-typedef int(__cdecl* did_know_every_minute_60_seconds_passes_in_africa)(void* a1, int a2, int a3);
-did_know_every_minute_60_seconds_passes_in_africa minetest_tolstring = (did_know_every_minute_60_seconds_passes_in_africa)(0x00A335D0);
+typedef int(__cdecl* did_know_every_minute_60_seconds_passes_in_africa)(void* a1, int a2, int a3, int a4);
+did_know_every_minute_60_seconds_passes_in_africa minetest_tolstring = (did_know_every_minute_60_seconds_passes_in_africa)(0x0094ED10);
 
-typedef int(__cdecl* misrepresenting_is_a_cutie)(int a1, int a2, int a3, int a4);
-misrepresenting_is_a_cutie minetest_pcall = (misrepresenting_is_a_cutie)(0x00A39720); //pcall
+typedef int(__fastcall* misrepresenting_is_a_cutie)(int a1, int a2, int a3, int a4, int a5, int a6);
+misrepresenting_is_a_cutie minetest_pcall = (misrepresenting_is_a_cutie)(0x00955E00); //pcall
 
 #define minetest_tostring(f,x) minetest_tolstring(f,x,NULL)
 /*
@@ -106,12 +106,12 @@ void* HookGettop(DWORD AddressToHook, void* FunctionToReplaceWith, bool rev = fa
 	}
 }
 //int __cdecl lua_pushcclosure(int a1, int a2, int a3)
-typedef int(__cdecl* minetest_pushcclosure_)(int a1, int a2, int a3, int a4);
-minetest_pushcclosure_ minetest_pushcclosure = (minetest_pushcclosure_)(0x00A35620); //lua_pushcclosure
+typedef int(__fastcall* minetest_pushcclosure_)(int a1, int a2, int a3, int a4, int a5);
+minetest_pushcclosure_ minetest_pushcclosure = (minetest_pushcclosure_)(0x00951970); //lua_pushcclosure
 
 
 DWORD m_L = 0; // minetest's lua state
-DWORD hookaddr = 0x00A32A94; //gettop addr
+DWORD hookaddr = 0x0094ED10; //gettop addr
 
 int OurCustomGetTopFunction(DWORD wtf)
 {
@@ -181,7 +181,7 @@ DWORD WINAPI Argon(LPVOID lpReserved) {
 				printf("an error has occured!111: %s\n", minetest_tostring((void*)m_L, -1));
 			else 
 			{
-				minetest_pcall(m_L, 0, LUA_MULTRET, 0);
+				minetest_pcall(m_L, 0, LUA_MULTRET, 0, 0, 0);
 				printf("\n[Argon] -> [Execution] -> Successfully Executed Script!\n");
 			}
 				
