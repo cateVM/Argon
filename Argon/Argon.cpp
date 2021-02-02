@@ -12,10 +12,11 @@
 #include <stdio.h>
 #include <iostream>
 #include <string>
-
+#include "Detours/detours.h"
 
 
 // 00A2E050 int __cdecl lua_newstate(int (__cdecl *a1)(int, _DWORD, _DWORD, signed int), int a2)
+// 00A43230 int (__cdecl *__cdecl luaL_openlibs(void *a1))(void *)
  // 00A3AD90 luaL_loadstring :troll:
  // 00A32A94 lua_gettop :sunglasses:
 // 00A335D0 lua_tostring for error handling
@@ -32,6 +33,10 @@ int __cdecl lj_cf_jit_off(int arg0)
 {
   return setjitmode(arg0, 0); 00A2E640 lua_jit off
 }
+
+ 00A35EC0 int __cdecl lua_newthread(int a1)
+
+  00A32AA0 unsigned int __cdecl lua_settop(int a1, int a2)
 */
 
 
@@ -52,6 +57,7 @@ extern "C" {
 #include "Lua_5.1/lstring.h"
 
 }
+
 /*
 * lua_loadstring
 * pushes [a2] as a function onto to the stack
@@ -86,6 +92,12 @@ typedef int(__cdecl* minetest_load_)(int a1, int a2, int a3, const char* a4, int
 minetest_load_ minetest_load = (minetest_load_)(0x00A3A450); //lua_loadx
 
 
+typedef int(__cdecl* minetest_newstate_)(int a1); // a1 = lua state
+minetest_newstate_ minetest_newstate = (minetest_newstate_)(0x00A35EC0); //lua_newthread
+
+typedef int(__cdecl* minetest_settop_)(int a1,int a2); // a1 = lua state
+minetest_settop_ minetest_settop = (minetest_settop_)(0x00A32AA0); //lua_settop
+
 
 #define minetest_tostring(f,x) minetest_tolstring(f,x,NULL)
 /*
@@ -93,28 +105,6 @@ minetest_load_ minetest_load = (minetest_load_)(0x00A3A450); //lua_loadx
 * for the games lua state
 * rev : true = revert the hook ? : false = hook the function
 */
-void* HookGettop(DWORD AddressToHook, void* FunctionToReplaceWith, bool rev = false)
-{ // Uses virtualprotect too override/hook the specified address with our function
-	DWORD oldprot;
-	if (!rev)
-	{
-		void* oldmem = new void*;
-		void* result = new void*;
-		memcpy(oldmem, (void*)AddressToHook, sizeof(void*) * 4);
-		VirtualProtect((LPVOID)AddressToHook, 1, PAGE_EXECUTE_READWRITE, &oldprot);
-		*(char*)AddressToHook = 0xE9; *(DWORD*)(AddressToHook + 1) = (DWORD)FunctionToReplaceWith - AddressToHook - 5;
-		memcpy(result, oldmem, sizeof(void*) * 4);
-		VirtualProtect((LPVOID)AddressToHook, 1, oldprot, &oldprot);
-		return result;
-	}
-	else
-	{
-		VirtualProtect((LPVOID)AddressToHook, 1, PAGE_EXECUTE_READWRITE, &oldprot);
-		memcpy((void*)AddressToHook, FunctionToReplaceWith, sizeof(void*) * 4);
-		VirtualProtect((LPVOID)AddressToHook, 1, oldprot, &oldprot);
-		return NULL;
-	}
-}
 typedef struct LoadS {
 	const char* s;
 	size_t size;
@@ -134,24 +124,13 @@ minetest_pushcclosure_ minetest_pushcclosure = (minetest_pushcclosure_)(0x00A356
 
 DWORD m_Lopenlibhook = 0;
 DWORD m_L = 0; // minetest's lua state
-DWORD hookaddr = 0x00A32A94; //gettop addr
-DWORD openlibaddr = 0x00A3A450;
-int OurCustomGetTopFunction(DWORD wtf)
+
+int OurCustomGetTopFunction(int wtf)
 {
-	if (wtf == 0) { // checking if lua is found
-		printf("\nLua_state not found!");
-		return 0;
-	}
-	if(wtf != 0 ){
-		//printf("\nLua_state found!");
 		m_L = wtf;
-	}
-	
 	return (*(DWORD*)(wtf + 20) - *(DWORD*)(wtf + 16)) >> 3;
 }
-
 //int a1, int a2, int a3, int a4
-
 DWORD WINAPI Argon(LPVOID lpReserved) {
 	AllocConsole();
 	SetConsoleTitleA("Argon");
@@ -159,15 +138,22 @@ DWORD WINAPI Argon(LPVOID lpReserved) {
 	freopen("CONIN$", "r", stdin);
 	HWND ConsoleHandle = GetConsoleWindow();
 	::ShowWindow(ConsoleHandle, SW_NORMAL);;
-	//std::cout << "Gettop hook = " << m_L << std::endl; test
-	HookGettop(hookaddr, OurCustomGetTopFunction, false); // gettop hook go brrr..
+	/*switched too detours
+	* :flex:
+	* :muscle:
+	*/
+
+	DetourTransactionBegin();
+	DetourUpdateThread(GetCurrentThread());
+	DetourAttach(&(LPVOID&)minetest_gettop, (PBYTE)OurCustomGetTopFunction);
+	DetourTransactionCommit();
+	
+
 	printf("hook placed\n");
-	//HookGettop(openlibaddr, CustomOpenLibFunc, false);
 	std::string Script = "";
 	HANDLE hPipe;
 	char buf[50000]; // :troll:
 	DWORD dwRead;
-
 	hPipe = CreateNamedPipe(TEXT("\\\\.\\pipe\\Argon"),
 		PIPE_ACCESS_DUPLEX | PIPE_TYPE_BYTE | PIPE_READMODE_BYTE,
 		PIPE_WAIT,
@@ -202,7 +188,8 @@ DWORD WINAPI Argon(LPVOID lpReserved) {
 			LoadS ls;
 			ls.s = Script.c_str();
 			ls.size = strlen(Script.c_str());
-			//printf("Lua State = %d", m_Lopenlibhook);
+			//printf("Lua State = %d", m_L);
+			
 			if (minetest_load(m_L,(int)getS,(int)&ls,"@Argon",0))
 				printf("an error has occured!111: %s\n", minetest_tostring((void*)m_L, -1));
 			else 

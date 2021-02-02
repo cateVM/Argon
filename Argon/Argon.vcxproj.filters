@@ -12,6 +12,9 @@
     <Filter Include="Lua5.1">
       <UniqueIdentifier>{32651926-75c8-48a4-84c7-ae5e789cbd08}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Detours">
+      <UniqueIdentifier>{330908c1-00a4-4719-a9aa-088b6fee5868}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Argon.cpp">
@@ -113,6 +116,9 @@
     <ClCompile Include="Customized Functions.cpp">
       <Filter>Core</Filter>
     </ClCompile>
+    <ClCompile Include="Detours\detours.cpp">
+      <Filter>Detours</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Lua_5.1\lapi.h">
@@ -186,6 +192,9 @@
     </ClInclude>
     <ClInclude Include="Customized Functions.hpp">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Detours\detours.h">
+      <Filter>Detours</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
