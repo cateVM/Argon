@@ -59,12 +59,6 @@ extern "C" {
 }
 
 /*
-* lua_loadstring
-* pushes [a2] as a function onto to the stack
-*/
-typedef int(__cdecl* minetest_loadstring_)(int a1, const char* a2);
-minetest_loadstring_ minetest_loadstring = (minetest_loadstring_)(0x00A3AD90);
-/*
 * lua_gettop
 * we dont actually use this anywhere
 * used as an (kinda) debugging tool
@@ -91,20 +85,12 @@ int __cdecl lua_load(int a1, int a2, int a3, int a4)
 typedef int(__cdecl* minetest_load_)(int a1, int a2, int a3, const char* a4, int a5); //
 minetest_load_ minetest_load = (minetest_load_)(0x00A3A450); //lua_loadx
 
-
-typedef int(__cdecl* minetest_newstate_)(int a1); // a1 = lua state
-minetest_newstate_ minetest_newstate = (minetest_newstate_)(0x00A35EC0); //lua_newthread
-
 typedef int(__cdecl* minetest_settop_)(int a1,int a2); // a1 = lua state
 minetest_settop_ minetest_settop = (minetest_settop_)(0x00A32AA0); //lua_settop
 
 
 #define minetest_tostring(f,x) minetest_tolstring(f,x,NULL)
-/*
-* lua_gettop hook 
-* for the games lua state
-* rev : true = revert the hook ? : false = hook the function
-*/
+
 typedef struct LoadS {
 	const char* s;
 	size_t size;
@@ -127,7 +113,7 @@ DWORD m_L = 0; // minetest's lua state
 
 int OurCustomGetTopFunction(int wtf)
 {
-		m_L = wtf;
+	m_L = wtf;
 	return (*(DWORD*)(wtf + 20) - *(DWORD*)(wtf + 16)) >> 3;
 }
 //int a1, int a2, int a3, int a4

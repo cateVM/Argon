@@ -198,7 +198,7 @@ int main(int, char**)
                     /*
                     * The pipe is busy
                     * or 
-                    * DOESNT FUCKING EXIST DID YOU INJECT THE DLL?
+                    * doesnt exist did you inject the dll?
                     */
                     //printf("Something went wrong...\n");
                     ImGui::OpenPopup("NPCStream not found, or not injected!");
