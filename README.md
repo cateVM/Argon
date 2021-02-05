@@ -13,6 +13,7 @@
 (***Make sure too have firacode.ttf in the same folder as the executable!***)
 
 3.Click on `Inject` (Make sure too have Minetest open!) If all went well you should see a message box saying "Successfully Injected!" 
+
 4.You can now execute lua scripts! **(All output is directed too Mintests console window!)**
 
 
