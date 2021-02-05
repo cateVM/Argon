@@ -20,3 +20,6 @@
 ## Known Bugs
 - This currently does not support minetest multiplayer.
 - If minetest crashes you have to close & reopen the ui for the inject button to work again.
+
+## Demo
+<img src = "https://i.imgur.com/YLnGNo5.png" >
