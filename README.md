@@ -1,5 +1,9 @@
 <img src = "https://img.shields.io/badge/Supported OS-Windows 10-informational?style=flat&logo=<os_type>&logoColor=white&color=FFB6C1" > <img src="https://img.shields.io/badge/Minetest Version-5.3.0-informational?style=flat&logo=<Vers>&logoColor=white&color=FFB6C1" >
 ![](https://img.shields.io/badge/Architecture-x86-informational?style=flat&logo=<arch>&logoColor=white&color=FFB6C1)
+
+[![forthebadge](https://forthebadge.com/images/badges/built-with-swag.svg)](https://forthebadge.com)
+[![forthebadge](https://forthebadge.com/images/badges/mom-made-pizza-rolls.svg)](https://forthebadge.com)
+[![forthebadge](https://forthebadge.com/images/badges/powered-by-black-magic.svg)](https://forthebadge.com)
 #   Argon a Mintest lua executor
 
 ## Installation
