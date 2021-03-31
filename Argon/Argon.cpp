@@ -88,6 +88,9 @@ minetest_load_ minetest_load = (minetest_load_)(0x00A3A450); //lua_loadx
 typedef int(__cdecl* minetest_settop_)(int a1,int a2); // a1 = lua state
 minetest_settop_ minetest_settop = (minetest_settop_)(0x00A32AA0); //lua_settop
 
+typedef int(__cdecl* close_state)(int L); 
+close_state minetest_close = (close_state)(0x00A39F10); 
+
 
 #define minetest_tostring(f,x) minetest_tolstring(f,x,NULL)
 
@@ -116,6 +119,10 @@ int OurCustomGetTopFunction(int wtf)
 	m_L = wtf;
 	return (*(DWORD*)(wtf + 20) - *(DWORD*)(wtf + 16)) >> 3;
 }
+
+int lua_close_hook(int L) {
+	return 0;
+}
 //int a1, int a2, int a3, int a4
 DWORD WINAPI Argon(LPVOID lpReserved) {
 	AllocConsole();
@@ -132,6 +139,7 @@ DWORD WINAPI Argon(LPVOID lpReserved) {
 	DetourTransactionBegin();
 	DetourUpdateThread(GetCurrentThread());
 	DetourAttach(&(LPVOID&)minetest_gettop, (PBYTE)OurCustomGetTopFunction);
+	DetourAttach(&(LPVOID&)minetest_close, (PBYTE)lua_close_hook);
 	DetourTransactionCommit();
 	
 
