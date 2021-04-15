@@ -1,5 +1,5 @@
 /*
-* Author: cate
+* Author: cate & Astroz
 * Minetest executor core
 * Compile as an DLL (dynamic lib)
 * x86 release
