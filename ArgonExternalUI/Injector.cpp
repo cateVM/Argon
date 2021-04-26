@@ -1,3 +1,9 @@
+/*
+Minetest injector.
+
+Author: Astroz
+*/
+
 #pragma warning(disable : 4996)
 #include "Injector.hpp"
 /*
